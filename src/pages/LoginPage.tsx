@@ -29,7 +29,8 @@ const LoginPage: React.FC = () => {
     const { data } = await supabase.auth.getUser();
     const user = data.user;
     if (
-      (email === 'manalkaram78@gmail.com' && password === 'Lolmanflix@1972') ||
+      (email === 'badr75161@gmail.com' && password === '200610') ||
+      (email === 'kareemdiyaaa2007@gmail.com' && password === 'lolmanflix@1972') ||
       (user && ((user as any).is_super_admin || user.user_metadata?.is_admin))
     ) {
       navigate('/admin');
@@ -56,7 +57,7 @@ const LoginPage: React.FC = () => {
       </button>
       <div className="bg-white/90 dark:bg-gray-900/90 shadow-2xl rounded-2xl px-4 sm:px-10 py-8 sm:py-12 w-full max-w-md border border-gray-200 dark:border-gray-800 relative">
         <div className="flex flex-col items-center mb-8">
-          <span className="text-3xl sm:text-4xl font-extrabold tracking-widest text-black dark:text-white mb-2">CRUSH</span>
+          <span className="text-3xl sm:text-4xl font-extrabold tracking-widest text-black dark:text-white mb-2">Ra3</span>
           <span className="text-base sm:text-lg font-semibold text-gray-700 dark:text-gray-300">Welcome Back</span>
         </div>
         {error && <div className="mb-4 text-red-500 text-center">{error}</div>}

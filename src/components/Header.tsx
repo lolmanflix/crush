@@ -234,7 +234,7 @@ export const Header = () => {
           </button>
           {/* Center: Brand */}
           <div className={`flex-1 flex justify-center header-logo${searchOpen ? ' hide' : ''}`}>
-            <h1 className="text-2xl font-serif font-bold tracking-widest uppercase select-none">CRUSH</h1>
+            <h1 className="text-2xl font-serif font-bold tracking-widest uppercase select-none">Ra3</h1>
           </div>
           {/* Animated Search Bar */}
           <div className={`header-search-bar${searchOpen ? ' open' : ''}`}
@@ -323,7 +323,7 @@ export const Header = () => {
             </button>
             <h2 className="text-xl font-bold mb-4 text-black dark:text-white flex items-center gap-2">
               {profileForm.name || user.email}
-              {(user.email === 'manalkaram78@gmail.com' || user.is_super_admin || user.user_metadata?.is_admin) && (
+              {(user.email === 'badr75161@gmail.com' || user.email === 'kareemdiyaaa2007@gmail.com' || user.is_super_admin || user.user_metadata?.is_admin) && (
                 <span className="ml-2 px-2 py-1 bg-blue-600 text-white text-xs rounded">Admin</span>
               )}
             </h2>

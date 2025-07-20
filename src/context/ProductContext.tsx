@@ -43,7 +43,7 @@ export const ProductProvider: React.FC<ProductProviderProps> = ({
 }) => {
   const [products, setProducts] = useState<Product[]>(() => {
     // Load products from localStorage on initial render
-    const savedProducts = localStorage.getItem('crushProducts');
+    const savedProducts = localStorage.getItem('ra3Products');
     if (savedProducts) {
       return JSON.parse(savedProducts);
     }
@@ -114,11 +114,11 @@ export const ProductProvider: React.FC<ProductProviderProps> = ({
   }, []);
   // Save products to localStorage whenever they change
   useEffect(() => {
-    localStorage.setItem('crushProducts', JSON.stringify(products));
+    localStorage.setItem('ra3Products', JSON.stringify(products));
   }, [products]);
   // Save sales to localStorage
   useEffect(() => {
-    localStorage.setItem('crushSales', JSON.stringify(sales));
+    localStorage.setItem('ra3Sales', JSON.stringify(sales));
   }, [sales]);
   const addProduct = (product: Omit<Product, 'id'>) => {
     const newProduct: Product = {

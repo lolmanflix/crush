@@ -131,7 +131,7 @@ export const LoadingScreen: React.FC<LoadingScreenProps> = ({
   return <div className="fixed inset-0 z-50 flex items-center justify-center bg-black">
       <div className="absolute inset-0" ref={containerRef}></div>
       <div className="absolute text-white text-4xl font-bold tracking-widest z-10 text-center">
-        <div className="mb-4">CRUSH</div>
+        <div className="mb-4">Ra3</div>
         <div className="text-sm font-normal animate-pulse">Loading...</div>
       </div>
     </div>;

@@ -51,7 +51,8 @@ const PrivateAdminRoute = ({ children }: { children: JSX.Element }) => {
   if (
     !user ||
     !(
-      user.email === 'manalkaram78@gmail.com' ||
+      user.email === 'badr75161@gmail.com' ||
+      user.email === 'kareemdiyaaa2007@gmail.com' ||
       (user as any).is_super_admin ||
       user.user_metadata?.is_admin
     )
