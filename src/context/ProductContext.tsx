@@ -41,61 +41,14 @@ export const supabase = createClient(
 export const ProductProvider: React.FC<ProductProviderProps> = ({
   children
 }) => {
-  const [products, setProducts] = useState<Product[]>(() => {
-    // Load products from localStorage on initial render
-    const savedProducts = localStorage.getItem('ra3Products');
-    if (savedProducts) {
-      return JSON.parse(savedProducts);
-    }
-    // Default sample products if none exist
-    return [{
-      id: '1',
-      name: 'Premium Wool Coat',
-      price: 1200,
-      category: 'men',
-      description: 'Luxurious wool coat for the modern gentleman',
-      imageUrl: ['https://images.unsplash.com/photo-1617137968427-85924c800a22?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3'],
-      inStock: true,
-      quantity: 25,
-      sizes: [
-        { size: 'S', available: true },
-        { size: 'M', available: true },
-        { size: 'L', available: false },
-        { size: 'XL', available: true }
-      ]
-    }, {
-      id: '2',
-      name: 'Designer Suit',
-      price: 2500,
-      category: 'men',
-      description: 'Elegant tailored suit for special occasions',
-      imageUrl: ['https://images.unsplash.com/photo-1521341057461-6eb5f40b07ab?q=80&w=1976&auto=format&fit=crop&ixlib=rb-4.0.3'],
-      inStock: true,
-      quantity: 15,
-      sizes: [
-        { size: 'S', available: true },
-        { size: 'M', available: true },
-        { size: 'L', available: true },
-        { size: 'XL', available: true }
-      ]
-    }, {
-      id: '3',
-      name: 'Kids Formal Outfit',
-      price: 750,
-      category: 'kids',
-      description: 'Adorable formal outfit for special events',
-      imageUrl: ['https://images.unsplash.com/photo-1519238263530-99bdd11df2ea?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3'],
-      inStock: false,
-      quantity: 0,
-      sizes: [
-        { size: 'S', available: false },
-        { size: 'M', available: true },
-        { size: 'L', available: false },
-        { size: 'XL', available: false }
-      ]
-    }];
-  });
+  const [products, setProducts] = useState<Product[]>([]);
   const [sales, setSales] = useState<SalesData[]>([]);
+
+  // Fetch products from Supabase
+  const fetchProducts = async () => {
+    const { data, error } = await supabase.from('products').select('*');
+    if (!error && data) setProducts(data);
+  };
 
   // Fetch sales from Supabase
   const fetchSales = async () => {
@@ -110,28 +63,22 @@ export const ProductProvider: React.FC<ProductProviderProps> = ({
   };
 
   useEffect(() => {
+    fetchProducts();
     fetchSales();
   }, []);
-  // Save products to localStorage whenever they change
-  useEffect(() => {
-    localStorage.setItem('ra3Products', JSON.stringify(products));
-  }, [products]);
-  // Save sales to localStorage
-  useEffect(() => {
-    localStorage.setItem('ra3Sales', JSON.stringify(sales));
-  }, [sales]);
-  const addProduct = (product: Omit<Product, 'id'>) => {
-    const newProduct: Product = {
-      ...product,
-      id: Date.now().toString()
-    };
-    setProducts([...products, newProduct]);
+
+  // Add product to Supabase
+  const addProduct = async (product: Omit<Product, 'id'>) => {
+    const { error } = await supabase.from('products').insert([{ ...product }]);
+    if (!error) fetchProducts();
   };
-  const updateProduct = (updatedProduct: Product) => {
-    setProducts(products.map(product => product.id === updatedProduct.id ? updatedProduct : product));
+  const updateProduct = async (updatedProduct: Product) => {
+    const { error } = await supabase.from('products').update(updatedProduct).eq('id', updatedProduct.id);
+    if (!error) fetchProducts();
   };
-  const deleteProduct = (id: string) => {
-    setProducts(products.filter(product => product.id !== id));
+  const deleteProduct = async (id: string) => {
+    const { error } = await supabase.from('products').delete().eq('id', id);
+    if (!error) fetchProducts();
   };
   const getProductById = (id: string) => {
     return products.find(product => product.id === id);
