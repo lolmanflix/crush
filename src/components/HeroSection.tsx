@@ -20,7 +20,7 @@ export const HeroSection = () => {
 
   return <section className="relative w-full h-screen">
       <div className="absolute inset-0">
-        <img src="/WhatsApp Image 2025-07-18 at 8.48.30 PM.jpeg" alt="Ra3 Hero" className="w-full h-full object-cover" />
+        <img src="/hero.jpg" alt="Ra3 Hero" className="w-full h-full object-cover" />
       </div>
       <div className="absolute inset-0 bg-black bg-opacity-30 flex flex-col items-center justify-center text-white p-4">
         {/* Animated Brand Name */}
