@@ -199,51 +199,10 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children, user }) =>
     return stored ? JSON.parse(stored) : [];
   });
 
-  // Merge logic
-  function mergeCarts(localCart: CartItem[], cloudCart: CartItem[]): CartItem[] {
-    const merged = [...localCart];
-    cloudCart.forEach(cloudItem => {
-      const idx = merged.findIndex(
-        i => i.id === cloudItem.id && i.size === cloudItem.size
-      );
-      if (idx > -1) {
-        merged[idx].quantity += cloudItem.quantity;
-      } else {
-        merged.push(cloudItem);
-      }
-    });
-    return merged;
-  }
-
-  // Save cart to Supabase cloud
-  const saveCartToCloud = async (cart: CartItem[], userId: string) => {
-    if (!userId) return;
-    await supabase
-      .from('carts')
-      .upsert([{ user_id: userId, items: cart, updated_at: new Date().toISOString() }], { onConflict: 'user_id' });
-  };
-
-  // On login, load and merge cloud cart
-  useEffect(() => {
-    const loadAndMergeCart = async () => {
-      if (!user?.id) return;
-      const { data } = await supabase.from('carts').select('items').eq('user_id', user.id).single();
-      const cloudCart = data?.items || [];
-      const localCart = JSON.parse(localStorage.getItem(storageKey) || '[]');
-      const merged = mergeCarts(localCart, cloudCart);
-      setCart(merged);
-      localStorage.setItem(storageKey, JSON.stringify(merged));
-      await saveCartToCloud(merged, user.id);
-    };
-    loadAndMergeCart();
-    // eslint-disable-next-line
-  }, [user?.id]);
-
   // Save cart to the current user's key
   useEffect(() => {
     localStorage.setItem(storageKey, JSON.stringify(cart));
-    if (user?.id) saveCartToCloud(cart, user.id);
-  }, [cart, storageKey, user?.id]);
+  }, [cart, storageKey]);
 
   // When user changes, load their cart
   useEffect(() => {
