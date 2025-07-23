@@ -157,6 +157,10 @@ export const ProductForm: React.FC<ProductFormProps> = ({
         imageUrls.push(publicUrlData.publicUrl);
       }
     }
+    // Convert sizes to array of strings for DB
+    const selectedSizes = formData.sizes
+      .filter(sz => sz.available && sz.size.trim() !== '')
+      .map(sz => sz.size.trim());
     const productData = {
       name: formData.name,
       price: parseFloat(formData.price),
@@ -165,7 +169,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
       imageUrl: imageUrls, // now an array
       inStock: formData.inStock,
       quantity: parseInt(formData.quantity),
-      sizes: formData.sizes
+      size: selectedSizes // <-- array of strings for DB
     };
     if (product) {
       updateProduct({

@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useCart, useProducts } from '../context/ProductContext';
+import { useCart, useProducts, supabase } from '../context/ProductContext';
 import { Header } from '../components/Header';
 import { Trash2, Plus, Minus } from 'lucide-react';
 
@@ -9,10 +9,55 @@ const CartPage: React.FC = () => {
   const { cart, removeFromCart, clearCart, incrementQuantity, decrementQuantity } = useCart();
   const { products } = useProducts();
   const isEmpty = cart.length === 0;
+  const [orderPlaced, setOrderPlaced] = React.useState(false);
+  const [placingOrder, setPlacingOrder] = React.useState(false);
+  const [address, setAddress] = React.useState('');
+  const [phone, setPhone] = React.useState('');
+  const [userId, setUserId] = useState<string | null>(null);
+  const [orderId, setOrderId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const getUser = async () => {
+      const { data } = await supabase.auth.getUser();
+      setUserId(data.user?.id || null);
+    };
+    getUser();
+  }, []);
 
   // You May Also Like: 3 random products not in cart
   const cartIds = cart.map(item => item.id);
   const youMayAlsoLike = products.filter(p => !cartIds.includes(p.id)).sort(() => 0.5 - Math.random()).slice(0, 3);
+
+  // Order placement handler
+  const handlePlaceOrder = async () => {
+    if (!address.trim() || !phone.trim()) {
+      alert('Please enter your address and phone number.');
+      return;
+    }
+    setPlacingOrder(true);
+    const order = {
+      items: cart,
+      total: cart.reduce((sum, item) => sum + item.price * item.quantity, 0),
+      payment_method: 'Pay on Delivery',
+      status: 'pending',
+      address,
+      phone,
+      user_id: userId,
+      created_at: new Date().toISOString(),
+    };
+    const { data, error } = await supabase.from('orders').insert([order]).select('id');
+    const insertedOrder = Array.isArray(data) ? data[0] : data;
+    setPlacingOrder(false);
+    if (!error) {
+      clearCart();
+      setOrderPlaced(true);
+      setAddress('');
+      setPhone('');
+      setOrderId(insertedOrder?.id ? insertedOrder.id.toString() : null);
+    } else {
+      alert('Failed to place order. Please try again.');
+    }
+  };
 
   return (
     <>
@@ -114,6 +159,39 @@ const CartPage: React.FC = () => {
                       <button type="button" className="bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded font-semibold text-sm">Apply</button>
                     </div>
                   </form>
+                  {/* Payment Options */}
+                  <div className="flex flex-col gap-2 mt-4">
+                    <span className="text-gray-400 text-xs mb-1">Payment Method:</span>
+                    <label className="flex items-center gap-2 text-white">
+                      <input type="radio" name="payment" value="visa" disabled className="accent-blue-600" />
+                      Visa <span className="text-xs text-yellow-400 ml-1">(coming soon)</span>
+                    </label>
+                    <label className="flex items-center gap-2 text-white">
+                      <input type="radio" name="payment" value="cod" defaultChecked className="accent-blue-600" />
+                      Pay on Delivery
+                    </label>
+                  </div>
+                  {/* Address and Phone Inputs */}
+                  <div className="flex flex-col gap-2 mt-4">
+                    <label className="text-gray-400 text-xs">Address</label>
+                    <input
+                      type="text"
+                      className="px-2 py-1 rounded border border-gray-600 bg-gray-800 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                      value={address}
+                      onChange={e => setAddress(e.target.value)}
+                      placeholder="Enter your address"
+                      required
+                    />
+                    <label className="text-gray-400 text-xs">Phone</label>
+                    <input
+                      type="text"
+                      className="px-2 py-1 rounded border border-gray-600 bg-gray-800 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                      value={phone}
+                      onChange={e => setPhone(e.target.value)}
+                      placeholder="Enter your phone number"
+                      required
+                    />
+                  </div>
                   <div className="flex flex-col gap-1 mt-2">
                     <span className="text-gray-400 text-xs mb-1">We accept:</span>
                     <div className="flex gap-2 items-center">
@@ -132,12 +210,22 @@ const CartPage: React.FC = () => {
                       Total: {cart.reduce((sum, item) => sum + item.price * item.quantity, 0)} EGP
                     </span>
                     <button
-                      className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold text-lg transition shadow"
-                      onClick={() => alert('Proceed to payment (integration coming soon!)')}
+                      className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold text-lg transition shadow disabled:opacity-60 disabled:cursor-not-allowed"
+                      onClick={handlePlaceOrder}
+                      disabled={isEmpty || placingOrder}
                     >
-                      Proceed to Pay
+                      {placingOrder ? 'Placing Order...' : 'Proceed to Pay'}
                     </button>
                   </div>
+                  {orderPlaced && (
+                    <div className="mt-4 flex flex-col items-center justify-center text-green-400 text-center font-semibold text-lg">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                      </svg>
+                      Order placed successfully!<br />
+                      <span className="text-green-300 text-base">Order Number: {orderId}</span>
+                    </div>
+                  )}
                 </div>
               </>
             )}

@@ -21,7 +21,7 @@ export const ProductShowcase: React.FC<ProductShowcaseProps> = ({
       <div className="container mx-auto">
         <div className="flex flex-col md:flex-row items-center justify-between mb-8">
           <h2 className="text-3xl font-bold">{title}</h2>
-          <button onClick={() => navigate('/men')} className="flex items-center mt-4 md:mt-0 group bg-transparent border-none cursor-pointer">
+          <button onClick={() => navigate(category === 'kids' ? '/kids' : '/men')} className="flex items-center mt-4 md:mt-0 group bg-transparent border-none cursor-pointer">
             <span className="mr-2">View All</span>
             <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" className="group-hover:translate-x-1 transition-transform"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
           </button>

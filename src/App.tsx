@@ -17,6 +17,7 @@ import GiftsPage from './pages/GiftsPage';
 import StoriesPage from './pages/StoriesPage';
 import CartPage from './pages/CartPage';
 import ProductDetailsPage from './pages/ProductDetailsPage';
+import TrackOrderPage from './pages/TrackOrderPage';
 // Route change detector component
 const RouteChangeListener = () => {
   const location = useLocation();
@@ -89,6 +90,7 @@ const AppContent = () => {
             <Route path="/gifts" element={<GiftsPage />} />
             <Route path="/stories" element={<StoriesPage />} />
             <Route path="/cart" element={<CartPage />} />
+            <Route path="/track-order" element={<TrackOrderPage />} />
             <Route path="/product/:id" element={<ProductDetailsPage />} />
             <Route path="/" element={<>
                   <Header />

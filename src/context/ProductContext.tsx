@@ -26,13 +26,14 @@ interface SalesData {
 }
 interface ProductContextType {
   products: Product[];
-  sales: SalesData[];
+  // sales: SalesData[]; // Remove old sales
+  orders: any[];
   addProduct: (product: Omit<Product, 'id'>) => void;
   updateProduct: (product: Product) => void;
   deleteProduct: (id: string, category: ProductCategory) => void;
   getProductById: (id: string) => Product | undefined;
-  addSale: (sale: Omit<SalesData, 'id'>) => Promise<void>;
-  fetchSales: () => Promise<void>;
+  // addSale: (sale: Omit<SalesData, 'id'>) => Promise<void>; // Remove old sales
+  // fetchSales: () => Promise<void>; // Remove old sales
 }
 const ProductContext = createContext<ProductContextType | undefined>(undefined);
 interface ProductProviderProps {
@@ -42,34 +43,24 @@ export const ProductProvider: React.FC<ProductProviderProps> = ({
   children
 }) => {
   const [products, setProducts] = useState<Product[]>([]);
-  const [sales, setSales] = useState<SalesData[]>([]);
+  // const [sales, setSales] = useState<SalesData[]>([]); // Remove old sales
+  const [orders, setOrders] = useState<any[]>([]);
 
-  // Fetch products from men_products and kids_products
+  // Fetch products from men_products only
   const fetchProducts = async () => {
     const { data: men, error: menError } = await supabase.from('men_products').select('*');
-    const { data: kids, error: kidsError } = await supabase.from('kids_products').select('*');
-    if (!menError && !kidsError) {
+    if (!menError) {
       const menWithCategory = (men || []).map(p => ({
         id: p.id.toString(),
         name: p.name,
         price: p.price,
-        category: 'men' as ProductCategory,
+        category: p.category, // <-- read from DB
         description: p.description,
         imageUrl: Array.isArray(p.imageUrl) ? p.imageUrl : (p.imageUrl ? [p.imageUrl] : []),
         quantity: p.stock_quantity,
-        size: p.size
+        size: Array.isArray(p.size) ? p.size : (p.size ? [p.size] : [])
       }));
-      const kidsWithCategory = (kids || []).map(p => ({
-        id: p.id.toString(),
-        name: p.name,
-        price: p.price,
-        category: 'kids' as ProductCategory,
-        description: p.description,
-        imageUrl: Array.isArray(p.imageUrl) ? p.imageUrl : (p.imageUrl ? [p.imageUrl] : []),
-        quantity: p.stock_quantity,
-        size: p.size
-      }));
-      setProducts([...menWithCategory, ...kidsWithCategory]);
+      setProducts(menWithCategory);
     }
   };
 
@@ -85,12 +76,18 @@ export const ProductProvider: React.FC<ProductProviderProps> = ({
     if (!error && data) fetchSales();
   };
 
+  // Fetch orders from Supabase
+  const fetchOrders = async () => {
+    const { data, error } = await supabase.from('orders').select('*').order('created_at', { ascending: false });
+    if (!error && data) setOrders(data);
+  };
+
   useEffect(() => {
     fetchProducts();
-    fetchSales();
+    fetchOrders();
   }, []);
 
-  // Add product to the correct table
+  // Add product to men_products only
   const addProduct = async (product: Omit<Product, 'id'>) => {
     try {
       const dbProduct = {
@@ -102,19 +99,15 @@ export const ProductProvider: React.FC<ProductProviderProps> = ({
         stock_quantity: product.quantity,
         size: product.size
       };
-      if (product.category === 'men') {
-        await supabase.from('men_products').insert([dbProduct]);
-      } else if (product.category === 'kids') {
-        await supabase.from('kids_products').insert([dbProduct]);
-      }
+      await supabase.from('men_products').insert([dbProduct]);
       fetchProducts();
     } catch (error) {
       console.error('Add product error:', error);
     }
   };
+  // Update product in men_products only
   const updateProduct = async (updatedProduct: Product) => {
     try {
-      const table = updatedProduct.category === 'men' ? 'men_products' : 'kids_products';
       const dbProduct = {
         name: updatedProduct.name,
         price: updatedProduct.price,
@@ -124,7 +117,7 @@ export const ProductProvider: React.FC<ProductProviderProps> = ({
         stock_quantity: updatedProduct.quantity,
         size: updatedProduct.size
       };
-      const { error } = await supabase.from(table).update(dbProduct).eq('id', updatedProduct.id);
+      const { error } = await supabase.from('men_products').update(dbProduct).eq('id', updatedProduct.id);
       if (error) {
         console.error('Update product error:', error);
       } else {
@@ -134,10 +127,10 @@ export const ProductProvider: React.FC<ProductProviderProps> = ({
       console.error('Update product exception:', error);
     }
   };
+  // Delete product in men_products only
   const deleteProduct = async (id: string, category: ProductCategory) => {
     try {
-      const table = category === 'men' ? 'men_products' : 'kids_products';
-      const { error } = await supabase.from(table).delete().eq('id', id);
+      const { error } = await supabase.from('men_products').delete().eq('id', id);
       if (error) {
         console.error('Delete product error:', error);
       } else {
@@ -152,13 +145,11 @@ export const ProductProvider: React.FC<ProductProviderProps> = ({
   };
   return <ProductContext.Provider value={{
     products,
-    sales,
+    orders,
     addProduct,
     updateProduct,
     deleteProduct,
-    getProductById,
-    addSale,
-    fetchSales
+    getProductById
   }}>
       {children}
     </ProductContext.Provider>;
@@ -208,10 +199,51 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children, user }) =>
     return stored ? JSON.parse(stored) : [];
   });
 
+  // Merge logic
+  function mergeCarts(localCart: CartItem[], cloudCart: CartItem[]): CartItem[] {
+    const merged = [...localCart];
+    cloudCart.forEach(cloudItem => {
+      const idx = merged.findIndex(
+        i => i.id === cloudItem.id && i.size === cloudItem.size
+      );
+      if (idx > -1) {
+        merged[idx].quantity += cloudItem.quantity;
+      } else {
+        merged.push(cloudItem);
+      }
+    });
+    return merged;
+  }
+
+  // Save cart to Supabase cloud
+  const saveCartToCloud = async (cart: CartItem[], userId: string) => {
+    if (!userId) return;
+    await supabase
+      .from('carts')
+      .upsert([{ user_id: userId, items: cart, updated_at: new Date().toISOString() }], { onConflict: 'user_id' });
+  };
+
+  // On login, load and merge cloud cart
+  useEffect(() => {
+    const loadAndMergeCart = async () => {
+      if (!user?.id) return;
+      const { data } = await supabase.from('carts').select('items').eq('user_id', user.id).single();
+      const cloudCart = data?.items || [];
+      const localCart = JSON.parse(localStorage.getItem(storageKey) || '[]');
+      const merged = mergeCarts(localCart, cloudCart);
+      setCart(merged);
+      localStorage.setItem(storageKey, JSON.stringify(merged));
+      await saveCartToCloud(merged, user.id);
+    };
+    loadAndMergeCart();
+    // eslint-disable-next-line
+  }, [user?.id]);
+
   // Save cart to the current user's key
   useEffect(() => {
     localStorage.setItem(storageKey, JSON.stringify(cart));
-  }, [cart, storageKey]);
+    if (user?.id) saveCartToCloud(cart, user.id);
+  }, [cart, storageKey, user?.id]);
 
   // When user changes, load their cart
   useEffect(() => {

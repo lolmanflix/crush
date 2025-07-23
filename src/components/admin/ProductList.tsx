@@ -89,14 +89,14 @@ export const ProductList: React.FC<ProductListProps> = ({
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
-                      {product.category === 'men' ? 'Men' : 'Kids'}
+                      {product.category ? product.category.charAt(0).toUpperCase() + product.category.slice(1) : ''}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {product.price.toFixed(2)} EGP
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    {product.inStock ? <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                    {product.quantity > 0 ? <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
                         In Stock
                       </span> : <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
                         Out of Stock

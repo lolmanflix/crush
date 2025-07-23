@@ -2,6 +2,7 @@ import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useProducts, useCart } from '../context/ProductContext';
 import { ShoppingBagIcon } from 'lucide-react';
+import { supabase } from '../context/ProductContext';
 
 const ProductDetailsPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -11,6 +12,15 @@ const ProductDetailsPage: React.FC = () => {
   const { addToCart } = useCart();
   const [addedMsg, setAddedMsg] = React.useState('');
   const [selectedSize, setSelectedSize] = React.useState<string | null>(null);
+  const [user, setUser] = React.useState<any>(null);
+
+  React.useEffect(() => {
+    const getUser = async () => {
+      const { data } = await supabase.auth.getUser();
+      setUser(data.user);
+    };
+    getUser();
+  }, []);
 
   if (!product) {
     return <div className="pt-24 text-center text-gray-500">Product not found.</div>;
@@ -113,15 +123,14 @@ const ProductDetailsPage: React.FC = () => {
             <div className="mb-4">
               <div className="font-semibold text-gray-700 dark:text-gray-200 mb-2">Select Size:</div>
               <div className="flex gap-2 flex-wrap">
-                {product.sizes && product.sizes.length > 0 ? product.sizes.map(sz => (
+                {Array.isArray(product.size) && product.size.length > 0 ? product.size.map((sz: string) => (
                   <button
-                    key={sz.size}
-                    disabled={!sz.available}
-                    className={`px-4 py-2 rounded border text-sm font-semibold transition ${selectedSize === sz.size ? 'bg-blue-600 text-white border-blue-600' : 'bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 border-gray-300'} ${!sz.available ? 'opacity-50 cursor-not-allowed' : 'hover:bg-blue-100 dark:hover:bg-blue-900'}`}
-                    onClick={() => sz.available && setSelectedSize(sz.size)}
+                    key={sz}
+                    className={`px-4 py-2 rounded border text-sm font-semibold transition ${selectedSize === sz ? 'bg-blue-600 text-white border-blue-600' : 'bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 border-gray-300'} hover:bg-blue-100 dark:hover:bg-blue-900`}
+                    onClick={() => setSelectedSize(sz)}
                     type="button"
                   >
-                    {sz.size}
+                    {sz}
                   </button>
                 )) : <span className="text-gray-400">No sizes available</span>}
               </div>
@@ -132,8 +141,12 @@ const ProductDetailsPage: React.FC = () => {
             className="mt-8 w-full bg-black text-white py-3 rounded-lg font-semibold hover:bg-gray-800 transition disabled:opacity-60 disabled:cursor-not-allowed"
             onClick={() => {
               if (!selectedSize) return;
+              if (!user) {
+                setAddedMsg('Please log in first to add to cart.');
+                return;
+              }
               addToCart({
-                id: product.id + '-' + selectedSize,
+                id: product.id, // Use only the database id
                 name: product.name,
                 price: product.price,
                 image: images[0],
