@@ -1,6 +1,11 @@
 import React, { useEffect, useState, createContext, useContext } from 'react';
 import { createClient } from '@supabase/supabase-js';
 
+export const supabase = createClient(
+  'https://phnimwrhqunvwftwxfil.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBobmltd3JocXVudndmdHd4ZmlsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE3MjY5NjYsImV4cCI6MjA2NzMwMjk2Nn0.ntmicHNBYGEC0EdJnQtnCk1156EGlUrH_t2m8-LBHck'
+);
+
 export type ProductCategory = 'men' | 'kids';
 export interface Product {
   id: string;
@@ -8,10 +13,9 @@ export interface Product {
   price: number;
   category: ProductCategory;
   description: string;
-  imageUrl: string[]; // now supports multiple images
-  inStock: boolean;
-  quantity: number;
-  sizes: { size: string; available: boolean }[];
+  imageUrl: string[]; // now array for jsonb
+  quantity: number; // maps to stock_quantity
+  size: string; // maps to size column
 }
 interface SalesData {
   id: string;
@@ -25,7 +29,7 @@ interface ProductContextType {
   sales: SalesData[];
   addProduct: (product: Omit<Product, 'id'>) => void;
   updateProduct: (product: Product) => void;
-  deleteProduct: (id: string) => void;
+  deleteProduct: (id: string, category: ProductCategory) => void;
   getProductById: (id: string) => Product | undefined;
   addSale: (sale: Omit<SalesData, 'id'>) => Promise<void>;
   fetchSales: () => Promise<void>;
@@ -34,20 +38,39 @@ const ProductContext = createContext<ProductContextType | undefined>(undefined);
 interface ProductProviderProps {
   children: React.ReactNode;
 }
-export const supabase = createClient(
-  'https://phnimwrhqunvwftwxfil.supabase.co',
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBobmltd3JocXVudndmdHd4ZmlsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE3MjY5NjYsImV4cCI6MjA2NzMwMjk2Nn0.ntmicHNBYGEC0EdJnQtnCk1156EGlUrH_t2m8-LBHck'
-);
 export const ProductProvider: React.FC<ProductProviderProps> = ({
   children
 }) => {
   const [products, setProducts] = useState<Product[]>([]);
   const [sales, setSales] = useState<SalesData[]>([]);
 
-  // Fetch products from Supabase
+  // Fetch products from men_products and kids_products
   const fetchProducts = async () => {
-    const { data, error } = await supabase.from('products').select('*');
-    if (!error && data) setProducts(data);
+    const { data: men, error: menError } = await supabase.from('men_products').select('*');
+    const { data: kids, error: kidsError } = await supabase.from('kids_products').select('*');
+    if (!menError && !kidsError) {
+      const menWithCategory = (men || []).map(p => ({
+        id: p.id.toString(),
+        name: p.name,
+        price: p.price,
+        category: 'men' as ProductCategory,
+        description: p.description,
+        imageUrl: Array.isArray(p.imageUrl) ? p.imageUrl : (p.imageUrl ? [p.imageUrl] : []),
+        quantity: p.stock_quantity,
+        size: p.size
+      }));
+      const kidsWithCategory = (kids || []).map(p => ({
+        id: p.id.toString(),
+        name: p.name,
+        price: p.price,
+        category: 'kids' as ProductCategory,
+        description: p.description,
+        imageUrl: Array.isArray(p.imageUrl) ? p.imageUrl : (p.imageUrl ? [p.imageUrl] : []),
+        quantity: p.stock_quantity,
+        size: p.size
+      }));
+      setProducts([...menWithCategory, ...kidsWithCategory]);
+    }
   };
 
   // Fetch sales from Supabase
@@ -67,18 +90,62 @@ export const ProductProvider: React.FC<ProductProviderProps> = ({
     fetchSales();
   }, []);
 
-  // Add product to Supabase
+  // Add product to the correct table
   const addProduct = async (product: Omit<Product, 'id'>) => {
-    const { error } = await supabase.from('products').insert([{ ...product }]);
-    if (!error) fetchProducts();
+    try {
+      const dbProduct = {
+        name: product.name,
+        price: product.price,
+        category: product.category,
+        description: product.description,
+        imageUrl: product.imageUrl,
+        stock_quantity: product.quantity,
+        size: product.size
+      };
+      if (product.category === 'men') {
+        await supabase.from('men_products').insert([dbProduct]);
+      } else if (product.category === 'kids') {
+        await supabase.from('kids_products').insert([dbProduct]);
+      }
+      fetchProducts();
+    } catch (error) {
+      console.error('Add product error:', error);
+    }
   };
   const updateProduct = async (updatedProduct: Product) => {
-    const { error } = await supabase.from('products').update(updatedProduct).eq('id', updatedProduct.id);
-    if (!error) fetchProducts();
+    try {
+      const table = updatedProduct.category === 'men' ? 'men_products' : 'kids_products';
+      const dbProduct = {
+        name: updatedProduct.name,
+        price: updatedProduct.price,
+        category: updatedProduct.category,
+        description: updatedProduct.description,
+        imageUrl: updatedProduct.imageUrl,
+        stock_quantity: updatedProduct.quantity,
+        size: updatedProduct.size
+      };
+      const { error } = await supabase.from(table).update(dbProduct).eq('id', updatedProduct.id);
+      if (error) {
+        console.error('Update product error:', error);
+      } else {
+        fetchProducts();
+      }
+    } catch (error) {
+      console.error('Update product exception:', error);
+    }
   };
-  const deleteProduct = async (id: string) => {
-    const { error } = await supabase.from('products').delete().eq('id', id);
-    if (!error) fetchProducts();
+  const deleteProduct = async (id: string, category: ProductCategory) => {
+    try {
+      const table = category === 'men' ? 'men_products' : 'kids_products';
+      const { error } = await supabase.from(table).delete().eq('id', id);
+      if (error) {
+        console.error('Delete product error:', error);
+      } else {
+        fetchProducts();
+      }
+    } catch (error) {
+      console.error('Delete product exception:', error);
+    }
   };
   const getProductById = (id: string) => {
     return products.find(product => product.id === id);

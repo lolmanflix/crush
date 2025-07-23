@@ -13,9 +13,14 @@ export const ProductList: React.FC<ProductListProps> = ({
     deleteProduct
   } = useProducts();
   const navigate = useNavigate();
-  const handleDelete = (id: string) => {
+  const handleDelete = (id: string, category: string) => {
     if (window.confirm('Are you sure you want to delete this product?')) {
-      deleteProduct(id);
+      try {
+        // @ts-ignore: category is ProductCategory
+        deleteProduct(id, category);
+      } catch (error) {
+        console.error('Delete error:', error);
+      }
     }
   };
   return <div>
@@ -108,7 +113,7 @@ export const ProductList: React.FC<ProductListProps> = ({
                       <PencilIcon size={16} />
                     </button>
                     <button
-                      onClick={e => { e.stopPropagation(); handleDelete(product.id); }}
+                      onClick={e => { e.stopPropagation(); handleDelete(product.id, product.category); }}
                       className="text-red-600 hover:text-red-900"
                     >
                       <TrashIcon size={16} />
