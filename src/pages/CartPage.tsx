@@ -74,8 +74,8 @@ const CartPage: React.FC = () => {
             {/* Motivational message (always show, compact on mobile) */}
             <div className="w-full mb-4">
               <div className="bg-blue-900/80 text-blue-200 rounded-lg px-3 py-2 text-center text-base lg:text-lg font-medium">
-                {cart.reduce((sum, item) => sum + item.price * item.quantity, 0) < 300
-                  ? `You're only ${300 - cart.reduce((sum, item) => sum + item.price * item.quantity, 0)} EGP away from free shipping!`
+                {cart.reduce((sum, item) => sum + item.price * item.quantity, 0) < 800
+                  ? `You're only ${800 - cart.reduce((sum, item) => sum + item.price * item.quantity, 0)} EGP away from free shipping!`
                   : 'You qualify for free shipping!'}
               </div>
             </div>

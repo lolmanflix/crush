@@ -6,11 +6,16 @@ import { useProducts } from '../context/ProductContext';
 
 const ANNOUNCEMENTS = [
   'صنع في مصر 🇪🇬',
-  'توصيل مجاني للطلبات فوق ٣٠٠ جنيه 🚚',
-  'تشكيلة الشتاء متاحة الآن ❄️',
+  'توصيل مجاني للطلبات فوق ٨٠٠ جنيه 🚚',
+  'تشكيلة الصيف متاحة الآن ☀️',
 ];
 
 export const Header = () => {
+  // Force dark mode on mount
+  useEffect(() => {
+    document.documentElement.classList.add('dark');
+    document.body.classList.add('bg-gray-900');
+  }, []);
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
   const [scrolled, setScrolled] = React.useState(false);
   const [user, setUser] = useState<any>(null);

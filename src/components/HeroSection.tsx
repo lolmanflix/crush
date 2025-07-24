@@ -20,7 +20,7 @@ export const HeroSection = () => {
 
   return <section className="relative w-full h-screen">
       <div className="absolute inset-0">
-        <img src="https://images.unsplash.com/photo-1483118714900-540cf339fd46?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3" alt="Luxury fashion" className="w-full h-full object-cover" />
+        <img src="/Firefly 20250724191134.png" alt="Hero" className="w-full h-full object-cover" />
       </div>
       <div className="absolute inset-0 bg-black bg-opacity-30 flex flex-col items-center justify-center text-white p-4">
         {/* Animated Brand Name */}
@@ -39,7 +39,7 @@ export const HeroSection = () => {
           Ra3
         </h1>
         <h2 className="text-5xl md:text-7xl font-bold tracking-wider text-center mb-6">
-          SPRING COLLECTION
+          SUMMER COLLECTION
         </h2>
         <p className="text-xl md:text-2xl mb-8 text-center max-w-2xl">
           Discover the new season's most refined pieces for men and kids
