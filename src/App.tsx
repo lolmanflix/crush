@@ -12,7 +12,6 @@ import LoginPage from './pages/LoginPage';
 import SignUpPage from './pages/SignUpPage';
 import MenPage from './pages/MenPage';
 import KidsPage from './pages/KidsPage';
-import CollectionsPage from './pages/CollectionsPage';
 import GiftsPage from './pages/GiftsPage';
 import StoriesPage from './pages/StoriesPage';
 import CartPage from './pages/CartPage';
@@ -86,7 +85,6 @@ const AppContent = () => {
             <Route path="/signup" element={<SignUpPage />} />
             <Route path="/men" element={<MenPage />} />
             <Route path="/kids" element={<KidsPage />} />
-            <Route path="/collections" element={<CollectionsPage />} />
             <Route path="/gifts" element={<GiftsPage />} />
             <Route path="/stories" element={<StoriesPage />} />
             <Route path="/cart" element={<CartPage />} />

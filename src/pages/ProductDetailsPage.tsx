@@ -13,6 +13,8 @@ const ProductDetailsPage: React.FC = () => {
   const [addedMsg, setAddedMsg] = React.useState('');
   const [selectedSize, setSelectedSize] = React.useState<string | null>(null);
   const [user, setUser] = React.useState<any>(null);
+  const [loading, setLoading] = React.useState(false);
+  const [fetchedProduct, setFetchedProduct] = React.useState<any>(null);
 
   React.useEffect(() => {
     const getUser = async () => {
@@ -22,20 +24,41 @@ const ProductDetailsPage: React.FC = () => {
     getUser();
   }, []);
 
-  if (!product) {
+  React.useEffect(() => {
+    if (!product && id) {
+      setLoading(true);
+      supabase
+        .from('products')
+        .select('*')
+        .eq('id', id)
+        .single()
+        .then(({ data }) => {
+          setFetchedProduct(data);
+          setLoading(false);
+        })
+        .catch(() => setLoading(false));
+    }
+  }, [id, product]);
+
+  const displayProduct = product || fetchedProduct;
+
+  if (loading) {
+    return <div className="pt-24 text-center text-gray-500">Loading product...</div>;
+  }
+  if (!displayProduct) {
     return <div className="pt-24 text-center text-gray-500">Product not found.</div>;
   }
 
-  const images = Array.isArray(product.imageUrl) ? product.imageUrl : (product.imageUrl ? [product.imageUrl] : []);
+  const images = Array.isArray(displayProduct.imageUrl) ? displayProduct.imageUrl : (displayProduct.imageUrl ? [displayProduct.imageUrl] : []);
   const [mainImage, setMainImage] = React.useState(images[0]);
 
   React.useEffect(() => {
     setMainImage(images[0]);
-  }, [product.id]);
+  }, [displayProduct.id]);
 
   // You May Also Like logic: up to 3 products from the same category, excluding current
   const relatedProducts = products
-    .filter(p => p.category === product.category && p.id !== product.id)
+    .filter(p => p.category === displayProduct.category && p.id !== displayProduct.id)
     .slice(0, 3);
 
   return (
@@ -93,7 +116,7 @@ const ProductDetailsPage: React.FC = () => {
         <div className="flex-1 flex flex-col items-center">
           <img
             src={mainImage}
-            alt={product.name}
+            alt={displayProduct.name}
             className="w-full max-w-md aspect-square object-cover rounded-lg mb-4"
             onError={e => {
               (e.target as HTMLImageElement).src = 'https://via.placeholder.com/500x500?text=No+Image';
@@ -116,14 +139,14 @@ const ProductDetailsPage: React.FC = () => {
         </div>
         <div className="flex-1 flex flex-col justify-between">
           <div>
-            <h1 className="text-2xl font-bold mb-2 text-black dark:text-white">{product.name}</h1>
-            <p className="text-gray-600 dark:text-gray-300 mb-4">{product.description}</p>
-            <span className="font-bold text-blue-600 text-2xl mb-4 block">{product.price} EGP</span>
+            <h1 className="text-2xl font-bold mb-2 text-black dark:text-white">{displayProduct.name}</h1>
+            <p className="text-gray-600 dark:text-gray-300 mb-4">{displayProduct.description}</p>
+            <span className="font-bold text-blue-600 text-2xl mb-4 block">{displayProduct.price} EGP</span>
             {/* Size Selector */}
             <div className="mb-4">
               <div className="font-semibold text-gray-700 dark:text-gray-200 mb-2">Select Size:</div>
               <div className="flex gap-2 flex-wrap">
-                {Array.isArray(product.size) && product.size.length > 0 ? product.size.map((sz: string) => (
+                {Array.isArray(displayProduct.size) && displayProduct.size.length > 0 ? displayProduct.size.map((sz: string) => (
                   <button
                     key={sz}
                     className={`px-4 py-2 rounded border text-sm font-semibold transition ${selectedSize === sz ? 'bg-blue-600 text-white border-blue-600' : 'bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 border-gray-300'} hover:bg-blue-100 dark:hover:bg-blue-900`}
@@ -146,9 +169,9 @@ const ProductDetailsPage: React.FC = () => {
                 return;
               }
               addToCart({
-                id: product.id, // Use only the database id
-                name: product.name,
-                price: product.price,
+                id: displayProduct.id, // Use only the database id
+                name: displayProduct.name,
+                price: displayProduct.price,
                 image: images[0],
                 quantity: 1,
                 size: selectedSize

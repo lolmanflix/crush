@@ -227,8 +227,8 @@ export const Header = () => {
             <Link to="/" className="hover:text-blue-600 transition">Home</Link>
             <Link to="/men" className="hover:text-blue-600 transition">Men</Link>
             <Link to="/kids" className="hover:text-blue-600 transition">Kids</Link>
-            <Link to="/collections" className="hover:text-blue-600 transition">Collections</Link>
             <Link to="/stories" className="hover:text-blue-600 transition">Stories</Link>
+            <Link to="/track-order" className="hover:text-blue-600 transition">Track Orders</Link>
             {user && (
               <button onClick={handleLogout} className="ml-2 text-sm text-red-600 hover:text-red-800 transition font-medium">Logout</button>
             )}
@@ -310,8 +310,8 @@ export const Header = () => {
             <Link to="/" className="py-2 text-lg font-medium hover:text-blue-600 transition block" onClick={() => setMobileMenuOpen(false)}>Home</Link>
             <Link to="/men" className="py-2 text-lg font-medium hover:text-blue-600 transition block" onClick={() => setMobileMenuOpen(false)}>Men</Link>
             <Link to="/kids" className="py-2 text-lg font-medium hover:text-blue-600 transition block" onClick={() => setMobileMenuOpen(false)}>Kids</Link>
-            <Link to="/collections" className="py-2 text-lg font-medium hover:text-blue-600 transition block" onClick={() => setMobileMenuOpen(false)}>Collections</Link>
             <Link to="/stories" className="py-2 text-lg font-medium hover:text-blue-600 transition block" onClick={() => setMobileMenuOpen(false)}>Stories</Link>
+            <Link to="/track-order" className="py-2 text-lg font-medium hover:text-blue-600 transition block" onClick={() => setMobileMenuOpen(false)}>Track Orders</Link>
             {user && (
               <button onClick={() => { handleLogout(); setMobileMenuOpen(false); }} className="py-2 text-lg text-left font-medium text-red-600 hover:text-red-800 transition block w-full">Logout</button>
             )}
