@@ -62,7 +62,7 @@ const ProductDetailsPage: React.FC = () => {
     .slice(0, 3);
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pt-0 px-2 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-[#181f2a] pt-0 px-2 sm:px-6 lg:px-8">
       {/* Floating Cart Button */}
       <button
         className="fixed bottom-6 right-6 z-50 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg p-4 flex items-center justify-center transition-all animate-bounce"

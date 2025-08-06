@@ -46,7 +46,7 @@ const TrackOrderPage: React.FC = () => {
   return (
     <>
       <Header />
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pt-24 px-2 sm:px-6 lg:px-8">
+      <div className="min-h-screen bg-[#181f2a] pt-24 px-2 sm:px-6 lg:px-8">
         <h2 className="text-3xl font-bold mb-8 text-center text-black dark:text-white">Track Your Order</h2>
         {loading ? (
           <div className="text-center text-gray-500">Loading...</div>
