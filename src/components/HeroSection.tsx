@@ -36,7 +36,7 @@ export const HeroSection = () => {
             zIndex: 10
           }}
         >
-          Ra3
+          crush
         </h1>
         <h2 className="text-5xl md:text-7xl font-bold tracking-wider text-center mb-6">
           SUMMER COLLECTION

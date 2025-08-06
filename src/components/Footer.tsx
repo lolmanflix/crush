@@ -30,7 +30,7 @@ export const Footer = () => {
             </ul>
           </div>
           <div>
-            <h3 className="text-lg font-bold mb-4">About Ra3</h3>
+            <h3 className="text-lg font-bold mb-4">About crush</h3>
             <ul className="space-y-2">
               <li>
                 <a href="#" className="text-gray-600 hover:text-black">
@@ -94,9 +94,9 @@ export const Footer = () => {
         </div>
         <div className="mt-16 pt-8 border-t border-gray-200">
           <div className="flex flex-col md:flex-row justify-between items-center">
-            <p className="text-gray-600">© 2023 Ra3. All rights reserved.</p>
+            <p className="text-gray-600">© 2023 crush. All rights reserved.</p>
             <div className="mt-4 md:mt-0">
-              <p className="text-gray-600">Luxury fashion for men and kids by Ra3</p>
+              <p className="text-gray-600">Luxury fashion for men and kids by crush</p>
             </div>
           </div>
         </div>

@@ -57,7 +57,7 @@ const LoginPage: React.FC = () => {
       </button>
       <div className="bg-white/90 dark:bg-gray-900/90 shadow-2xl rounded-2xl px-4 sm:px-10 py-8 sm:py-12 w-full max-w-md border border-gray-200 dark:border-gray-800 relative">
         <div className="flex flex-col items-center mb-8">
-          <span className="text-3xl sm:text-4xl font-extrabold tracking-widest text-black dark:text-white mb-2">Ra3</span>
+          <span className="text-3xl sm:text-4xl font-extrabold tracking-widest text-black dark:text-white mb-2">crush</span>
           <span className="text-base sm:text-lg font-semibold text-gray-700 dark:text-gray-300">Welcome Back</span>
         </div>
         {error && <div className="mb-4 text-red-500 text-center">{error}</div>}

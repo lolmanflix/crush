@@ -239,7 +239,7 @@ export const Header = () => {
           </button>
           {/* Center: Brand */}
           <div className={`flex-1 flex justify-center header-logo${searchOpen ? ' hide' : ''}`}>
-            <h1 className="text-2xl font-serif font-bold tracking-widest uppercase select-none">Ra3</h1>
+            <h1 className="text-2xl font-serif font-bold tracking-widest uppercase select-none">crush</h1>
           </div>
           {/* Animated Search Bar */}
           <div className={`header-search-bar${searchOpen ? ' open' : ''}`}
