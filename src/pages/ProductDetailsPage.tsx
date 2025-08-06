@@ -15,6 +15,7 @@ const ProductDetailsPage: React.FC = () => {
   const [user, setUser] = React.useState<any>(null);
   const [loading, setLoading] = React.useState(false);
   const [fetchedProduct, setFetchedProduct] = React.useState<any>(null);
+  const [fetchError, setFetchError] = React.useState('');
 
   React.useEffect(() => {
     const getUser = async () => {
@@ -27,16 +28,26 @@ const ProductDetailsPage: React.FC = () => {
   React.useEffect(() => {
     if (!product && id) {
       setLoading(true);
+      setFetchError('');
       supabase
         .from('products')
         .select('*')
         .eq('id', id)
         .single()
-        .then(({ data }) => {
-          setFetchedProduct(data);
+        .then(({ data, error }) => {
+          if (error || !data) {
+            setFetchError('Product not found or an error occurred.');
+            setFetchedProduct(null);
+          } else {
+            setFetchedProduct(data);
+          }
           setLoading(false);
         })
-        .catch(() => setLoading(false));
+        .catch(() => {
+          setFetchError('Product not found or an error occurred.');
+          setFetchedProduct(null);
+          setLoading(false);
+        });
     }
   }, [id, product]);
 
@@ -44,6 +55,9 @@ const ProductDetailsPage: React.FC = () => {
 
   if (loading) {
     return <div className="pt-24 text-center text-gray-500">Loading product...</div>;
+  }
+  if (fetchError) {
+    return <div className="pt-24 text-center text-red-500">{fetchError}</div>;
   }
   if (!displayProduct) {
     return <div className="pt-24 text-center text-gray-500">Product not found.</div>;
